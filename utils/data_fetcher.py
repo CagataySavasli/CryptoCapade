@@ -24,6 +24,7 @@ def _download_crypto(
             end=end,
             progress=False,
             auto_adjust=True,
+            threads=False,
         )
         # If we got no data, assume a transient rate limit or network hiccup
         if df.empty:
