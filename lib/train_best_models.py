@@ -63,18 +63,18 @@ def main():
             }
             model = model_map[name].set_params(**params)
             model.fit(X, y)
-            joblib.dump(model, os.path.join('..', 'output', 'results', f'{name}_best.pkl'))
+            joblib.dump(model, os.path.join('..', 'output', 'model', f'{name}_best.pkl'))
         elif name.startswith('ARIMA'):
             order = tuple(params['order'])
             series = df['log_return'].reset_index(drop=True)
             model = ARIMA(series, order=order).fit()
-            model.save(os.path.join('..', 'output', 'results', f'{name}_best.pkl'))
+            model.save(os.path.join('..', 'output', 'model', f'{name}_best.pkl'))
         elif name == 'LSTM':
             model = train_lstm_full(X, y, **params)
-            torch.save(model.state_dict(), os.path.join('..', 'output', 'results', 'LSTM_best.pt'))
+            torch.save(model.state_dict(), os.path.join('..', 'output', 'model', 'LSTM_best.pt'))
         elif name == 'Transformer':
             model = train_transformer_full(X, y, **params)
-            torch.save(model.state_dict(), os.path.join('..', 'output', 'results', 'Transformer_best.pt'))
+            torch.save(model.state_dict(), os.path.join('..', 'output', 'model', 'Transformer_best.pt'))
         print(f'{name} trained and saved.')
 
 if __name__ == '__main__':
