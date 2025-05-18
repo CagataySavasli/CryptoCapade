@@ -1,4 +1,19 @@
 {
+    "ARIMA(5, 1, 0)": {
+        "order": [
+            5,
+            1,
+            0
+        ]
+    },
+    "RandomForest": {
+        "max_depth": 5,
+        "n_estimators": 200
+    },
+    "XGB": {
+        "learning_rate": 0.01,
+        "n_estimators": 50
+    },
     "Lasso": {
         "alpha": 0.001
     },
