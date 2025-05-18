@@ -6,6 +6,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+
+from tqdm import trange
+
 from lib import (
 # Models:
     LSTMForecaster,
@@ -64,42 +67,72 @@ def evaluate_arima(series: pd.Series, order: tuple, cv_splits: int) -> list:
 
 
 def evaluate_pytorch_model(
-    model_class, X: np.ndarray, y: np.ndarray,
-    cv_splits: int, epochs: int, batch_size: int, lr: float, **model_kwargs
-) -> list:
-    tscv = TimeSeriesSplit(n_splits=cv_splits)
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model_class,
+    X,                     # shape: (n_samples, seq_len)
+    y,                     # shape: (n_samples,) or (n_samples, 1)
+    cv_splits: int,
+    epochs: int,
+    batch_size: int,
+    lr: float,
+    **model_kwargs
+):
+    device = torch.device('cpu') #'torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     rmses = []
+    tscv = TimeSeriesSplit(n_splits=cv_splits)
+
     for train_idx, test_idx in tscv.split(X):
-        X_train = torch.tensor(X[train_idx], dtype=torch.float32).unsqueeze(-1).to(device)
-        y_train = torch.tensor(y[train_idx], dtype=torch.float32).unsqueeze(-1).to(device)
-        X_test = torch.tensor(X[test_idx], dtype=torch.float32).unsqueeze(-1).to(device)
-        y_test = torch.tensor(y[test_idx], dtype=torch.float32).unsqueeze(-1).to(device)
+        # prepare data
+        X_train = X[train_idx]
+        y_train = y[train_idx]
+
+        X_test = X[test_idx]
+        y_test = y[test_idx]
+
+        # convert to tensors
+        X_train = torch.tensor(X_train, dtype=torch.float32).unsqueeze(-1).to(device)
+        y_train = torch.tensor(y_train, dtype=torch.float32).unsqueeze(-1).to(device)
+        X_test = torch.tensor(X_test, dtype=torch.float32).unsqueeze(-1).to(device)
+        y_test = torch.tensor(y_test, dtype=torch.float32).unsqueeze(-1).to(device)
 
         train_dataset = torch.utils.data.TensorDataset(X_train, y_train)
-        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
+        test_dataset = torch.utils.data.TensorDataset(X_test, y_test)
 
+        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False, drop_last=True)
+
+        # instantiate model
         model = model_class(**model_kwargs).to(device)
-        criterion = nn.MSELoss()
-        optimizer = optim.Adam(model.parameters(), lr=lr)
+        opt   = optim.Adam(model.parameters(), lr=lr)
+        loss_fn = nn.MSELoss()
 
+        # training loop
         model.train()
         for _ in range(epochs):
             for xb, yb in train_loader:
-                optimizer.zero_grad()
-                preds = model(xb)
-                loss = criterion(preds, yb)
+                xb, yb = xb.to(device), yb.to(device)
+                opt.zero_grad()
+                # print(xb.shape)
+                # xb = xb.view(-1, xb.size(1), 1)  # Reshape to (batch_size, seq_len, input_size)
+                output = model(xb)
+                loss = loss_fn(output, yb)
                 loss.backward()
-                optimizer.step()
+                opt.step()
 
+        # evaluation
         model.eval()
         with torch.no_grad():
             preds = model(X_test)
-        rmses.append(float(torch.sqrt(torch.mean((preds - y_test)**2)).item()))
+            rmse = torch.sqrt(torch.mean((preds - y_test) ** 2)).item()
+        rmses.append(rmse)
+
+        if device.type == 'cuda':
+            torch.cuda.empty_cache()
+
     return rmses
 
+
 def train_lstm_full(X, y, input_size, hidden_size, num_layers, lr, epochs, batch_size):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cpu') #'torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     X_t = torch.tensor(X, dtype=torch.float32).unsqueeze(-1).to(device)
     y_t = torch.tensor(y, dtype=torch.float32).unsqueeze(-1).to(device)
     dataset = torch.utils.data.TensorDataset(X_t, y_t)
@@ -120,7 +153,7 @@ def train_lstm_full(X, y, input_size, hidden_size, num_layers, lr, epochs, batch
 
 
 def train_transformer_full(X, y, input_size, num_heads, hidden_dim, num_layers, lr, epochs, batch_size):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cpu') #'torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     X_t = torch.tensor(X, dtype=torch.float32).unsqueeze(-1).to(device)
     y_t = torch.tensor(y, dtype=torch.float32).unsqueeze(-1).to=device
     dataset = torch.utils.data.TensorDataset(X_t, y_t)
