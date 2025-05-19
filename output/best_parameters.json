@@ -1,0 +1,39 @@
+{
+    "LinearRegression": {},
+    "Lasso": {
+        "alpha": 0.001
+    },
+    "Ridge": {
+        "alpha": 10
+    },
+    "RandomForest": {
+        "n_estimators": 100,
+        "max_depth": 5
+    },
+    "XGB": {
+        "n_estimators": 50,
+        "learning_rate": 0.01
+    },
+    "ARIMA": {
+        "order": [
+            5,
+            1,
+            0
+        ]
+    },
+    "LSTM": {
+        "epochs": 50,
+        "batch_size": 16,
+        "lr": 0.001,
+        "hidden_size": 32,
+        "num_layers": 1
+    },
+    "Transformer": {
+        "epochs": 20,
+        "batch_size": 16,
+        "lr": 0.001,
+        "num_heads": 4,
+        "hidden_dim": 16,
+        "num_layers": 1
+    }
+}
