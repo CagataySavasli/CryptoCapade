@@ -208,6 +208,8 @@ def main():
     Welcome to CryptoCapade! 🚀
     It is a web application designed to provide AI-powered services for Bitcoin (BTC) trading and analysis.
     
+    NOTE: All Models cannot be deployed at the same time due to memory constraints.
+    
     Developed as: CS552 - Data Science Project 
     Developed by: Ahmet Çağatay Savaşlı, Nazar Aktosun
     """
