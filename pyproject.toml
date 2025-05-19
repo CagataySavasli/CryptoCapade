@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Ahmet Çağatay Savaşlı <cagatay.savasli@ozu.edu.tr>"]
 readme = "README.md"
+package-mode = false
 packages = [
     { include = "controllers" },
     { include = "trainers" },
