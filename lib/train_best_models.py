@@ -45,12 +45,15 @@ def main():
     HORIZON = 1
 
     # Load best parameters
-    params_path = os.path.join('..', 'output', 'best_params.json')
+    params_path = os.path.join('..', 'output', 'best_parameters.json')
     with open(params_path, 'r') as fp:
         best_params = json.load(fp)
 
     df = load_and_preprocess(SYMBOL, START_DATE, END_DATE)
     X, y = create_feature_target(df, WINDOW_SIZE, HORIZON)
+
+    best_params['LSTM']['input_size'] = 1
+    best_params['Transformer']['input_size'] = 1
 
     for name, params in best_params.items():
         if name in ['LinearRegression', 'Lasso', 'Ridge', 'RandomForest', 'XGB']:

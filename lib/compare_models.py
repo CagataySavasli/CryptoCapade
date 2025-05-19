@@ -139,8 +139,8 @@ def main():
     print(f"Best params for Transformer: {best_p}, RMSE={best_score:.4f}")
 
     # Save best parameters
-    os.makedirs('output', exist_ok=True)
-    with open('output/best_parameters.json', 'w') as f:
+    os.makedirs('../output', exist_ok=True)
+    with open('../output/best_parameters.json', 'w') as f:
         json.dump(best_params, f, indent=4)
 
     # Evaluation of best models
@@ -169,6 +169,11 @@ def main():
         hidden_dim=best_params['Transformer']['hidden_dim'],
         num_layers=best_params['Transformer']['num_layers']
     )
+    # Save best parameters
+    os.makedirs('../output', exist_ok=True)
+    with open('../output/best_params.json', 'w') as f:
+        json.dump(best_params, f, indent=4)
+
 
     # Summary
     summary = pd.DataFrame({

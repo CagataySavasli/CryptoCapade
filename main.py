@@ -33,7 +33,7 @@ class AIPredictionService(Service):
         self.hist_range: Tuple[datetime.date, datetime.date] = (None, None)
 
     def _load_models(self) -> Dict[str, object]:
-        params_path = os.path.join(RESULT_DIR, 'best_params.json')
+        params_path = os.path.join(RESULT_DIR, 'best_parameters.json')
         with open(params_path, 'r') as fp:
             best_params = json.load(fp)
 

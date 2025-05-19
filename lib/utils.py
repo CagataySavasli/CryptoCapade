@@ -135,6 +135,8 @@ def train_lstm_full(X, y, input_size, hidden_size, num_layers, lr, epochs, batch
     device = torch.device('cpu') #'torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     X_t = torch.tensor(X, dtype=torch.float32).unsqueeze(-1).to(device)
     y_t = torch.tensor(y, dtype=torch.float32).unsqueeze(-1).to(device)
+    X_t = X_t.view(X_t.size(0), X_t.size(1), 1)  # Reshape to (batch_size, seq_len, input_size)
+    y_t = y_t.view(y_t.size(0), 1)  # Reshape to (batch_size, target_size)
     dataset = torch.utils.data.TensorDataset(X_t, y_t)
     loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
@@ -152,22 +154,41 @@ def train_lstm_full(X, y, input_size, hidden_size, num_layers, lr, epochs, batch
     return model
 
 
-def train_transformer_full(X, y, input_size, num_heads, hidden_dim, num_layers, lr, epochs, batch_size):
-    device = torch.device('cpu') #'torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+def train_transformer_full(
+    X, y,
+    input_size, num_heads, hidden_dim, num_layers,
+    lr, epochs, batch_size
+):
+    device = torch.device('cpu')  # or 'cuda' if available
+
+    # build tensors
     X_t = torch.tensor(X, dtype=torch.float32).unsqueeze(-1).to(device)
-    y_t = torch.tensor(y, dtype=torch.float32).unsqueeze(-1).to=device
+    y_t = torch.tensor(y, dtype=torch.float32).unsqueeze(-1).to(device)
+
+    # pack into a Dataset/DataLoader
     dataset = torch.utils.data.TensorDataset(X_t, y_t)
     loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
-    model = TransformerForecaster(input_size, num_heads, hidden_dim, num_layers).to(device)
+    # instantiate model
+    model = TransformerForecaster(
+        input_size=input_size,
+        num_heads=num_heads,
+        hidden_dim=hidden_dim,
+        num_layers=num_layers
+    ).to(device)
+
     optimizer = optim.Adam(model.parameters(), lr=lr)
     criterion = nn.MSELoss()
+
+    # training loop
     model.train()
     for _ in range(epochs):
         for xb, yb in loader:
+            xb, yb = xb.to(device), yb.to(device)
             optimizer.zero_grad()
             preds = model(xb)
             loss = criterion(preds, yb)
             loss.backward()
             optimizer.step()
+
     return model
