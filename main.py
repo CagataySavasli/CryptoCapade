@@ -204,6 +204,14 @@ class TrendTrackingService(Service):
 def main():
     st.set_page_config(page_title="CryptoCapade", layout="wide")
     st.title("CryptoCapade 💎: AI-Enhanced BTC Services")
+    text = """
+    Welcome to CryptoCapade! 🚀
+    It is a web application designed to provide AI-powered services for Bitcoin (BTC) trading and analysis.
+    
+    Developed as: CS552 - Data Science Project 
+    Developed by: Ahmet Çağatay Savaşlı, Nazar Aktosun
+    """
+    st.text(text)
 
     services = {
         "AI Powered Prediction": AIPredictionService,
